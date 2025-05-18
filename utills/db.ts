@@ -15,4 +15,7 @@ const prisma = globalForPrisma.prisma ?? prismaClientSingleton();
 
 export default prisma;
 
-if(process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
+// @ts-ignore
+if (typeof process !== "undefined" && process.env.NODE_ENV !== "production") {
+    globalForPrisma.prisma = prisma;
+}
