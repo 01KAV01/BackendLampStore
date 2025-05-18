@@ -1,5 +1,5 @@
-
-import prisma from "../utills/db";
+const { PrismaClient } = require("@prisma/client");
+const prisma = new PrismaClient();
 const bcrypt = require("bcryptjs");
 
 async function getAllUsers(request, response) {

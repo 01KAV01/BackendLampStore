@@ -1,6 +1,5 @@
-
-import prisma from "../utills/db";
-
+const { PrismaClient } = require("@prisma/client");
+const prisma = new PrismaClient();
 
 async function createCategory(request, response) {
   try {
