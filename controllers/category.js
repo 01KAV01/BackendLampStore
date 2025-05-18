@@ -1,6 +1,6 @@
-const { PrismaClient } = require("@prisma/client");
+
 import prisma from "../utills/db";
-const prisma = new PrismaClient();
+
 
 async function createCategory(request, response) {
   try {
