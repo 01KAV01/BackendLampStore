@@ -79,7 +79,8 @@ async function getAllCategories(request, response) {
     const categories = await prisma.category.findMany({});
     return response.json(categories);
   } catch (error) {
-    console.error("Error fetching categories:", error); // Добавьте вывод ошибки
+    console.error("Error fetching categories:", error);
+    console.error(error); // <-- добавьте эту строку!
     return response.status(500).json({ error: "Error fetching categories" });
   }
 }
