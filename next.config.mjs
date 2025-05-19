@@ -18,6 +18,7 @@ const nextConfig = {
         port: ""
       }
         ],
+            formats: ['image/webp', 'image/png', 'image/jpeg', 'image/jpg'],
       },
 };
 
