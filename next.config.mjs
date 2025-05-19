@@ -7,6 +7,16 @@ const nextConfig = {
             hostname: 'placehold.co',
             port: ""
           },
+           {
+        protocol: 'https',
+        hostname: 'backendlampstore-production.up.railway.app',
+        port: ""
+      },
+       {
+        protocol: 'https',
+        hostname: 'frontendlampstore-production.up.railway.app',
+        port: ""
+      }
         ],
       },
 };
