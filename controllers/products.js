@@ -3,7 +3,7 @@ const prisma = new PrismaClient();
 
 async function getAllProducts(request, response) {
   const mode = request.query.mode || "";
-  // checking if we are on the admin products page because we don't want to have filtering, sorting and pagination there
+
   if(mode === "admin"){
     try {
       const adminProducts = await prisma.product.findMany({});
@@ -17,7 +17,7 @@ async function getAllProducts(request, response) {
     let sortObj = {};
     let sortByValue = "defaultSort";
   
-    // getting current page
+
     const page = Number(request.query.page) ? Number(request.query.page) : 1;
   
     if (dividerLocation !== -1) {
@@ -29,38 +29,36 @@ async function getAllProducts(request, response) {
       let filterArray = [];
   
       for (let i = 0; i < queryArray.length; i++) {
-        // checking whether it is filter mode or price filter
+
         if (
           queryArray[i].indexOf("filters") !== -1 &&
           queryArray[i].indexOf("price") !== -1
         ) {
   
-          // taking price par. Of course I could write it much simpler: filterType="price"
           filterType = queryArray[i].substring(
             queryArray[i].indexOf("price"),
             queryArray[i].indexOf("price") + "price".length
           );
         }
   
-        // checking whether it is filter mode and rating filter
+
         if (
           queryArray[i].indexOf("filters") !== -1 &&
           queryArray[i].indexOf("rating") !== -1
         ) {
-  
-          // taking "rating" part. Of course I could write it much simpler: filterType="rating"
+
           filterType = queryArray[i].substring(
             queryArray[i].indexOf("rating"),
             queryArray[i].indexOf("rating") + "rating".length
           );
         }
   
-        // checking whether it is filter mode and category filter
+  
         if (
           queryArray[i].indexOf("filters") !== -1 &&
           queryArray[i].indexOf("category") !== -1
         ) {
-          // getting "category" part
+
           filterType = "category";
         }
   
@@ -68,7 +66,7 @@ async function getAllProducts(request, response) {
           queryArray[i].indexOf("filters") !== -1 &&
           queryArray[i].indexOf("inStock") !== -1
         ) {
-          // getting "inStock" part.  Of course I could write it much simpler: filterType="inStock"
+
           filterType = queryArray[i].substring(
             queryArray[i].indexOf("inStock"),
             queryArray[i].indexOf("inStock") + "inStock".length
@@ -79,7 +77,7 @@ async function getAllProducts(request, response) {
           queryArray[i].indexOf("filters") !== -1 &&
           queryArray[i].indexOf("outOfStock") !== -1
         ) {
-          // getting "outOfStock" part.  Of course I could write it much simpler: filterType="outOfStock"
+
           filterType = queryArray[i].substring(
             queryArray[i].indexOf("outOfStock"),
             queryArray[i].indexOf("outOfStock") + "outOfStock".length
@@ -87,16 +85,13 @@ async function getAllProducts(request, response) {
         }
   
         if (queryArray[i].indexOf("sort") !== -1) {
-          // getting sort value from the query
+
           sortByValue = queryArray[i].substring(queryArray[i].indexOf("=") + 1);
         }
-  
-        // checking whether in the given query filters mode is on
+
         if (queryArray[i].indexOf("filters") !== -1) {
           let filterValue;
-          // checking that it is not filter by category. I am doing it so I can avoid converting string to number
           if (queryArray[i].indexOf("category") === -1) {
-            // taking value part. It is the part where number value of the query is located and I am converting it to the number type because it is string by default
             filterValue = parseInt(
               queryArray[i].substring(
                 queryArray[i].indexOf("=") + 1,
@@ -104,27 +99,18 @@ async function getAllProducts(request, response) {
               )
             );
           } else {
-            // if it is filter by category
             filterValue = queryArray[i].substring(
               queryArray[i].indexOf("=") + 1,
               queryArray[i].length
             );
           }
   
-          // getting operator for example: lte, gte, gt, lt....
           const filterOperator = queryArray[i].substring(
             queryArray[i].indexOf("$") + 1,
             queryArray[i].indexOf("=") - 1
           );
   
-          // All of it I add to the filterArray
-          // example for current state of filterArray:
-          /*
-                  [
-                  { filterType: 'price', filterOperator: 'lte', filterValue: 3000 },
-                  { filterType: 'rating', filterOperator: 'gte', filterValue: 0 }
-                  ]
-                  */
+
           filterArray.push({ filterType, filterOperator, filterValue });
         }
       }
@@ -138,11 +124,11 @@ async function getAllProducts(request, response) {
       }
     }
   
-    let whereClause = { ...filterObj }; // Include other filters if any
+    let whereClause = { ...filterObj };
   
-    // Remove category filter from whereClause and use it separately
+
     if (filterObj.category && filterObj.category.equals) {
-      delete whereClause.category; // Remove category filter from whereClause
+      delete whereClause.category; 
     }
   
     if (sortByValue === "defaultSort") {
@@ -169,7 +155,7 @@ async function getAllProducts(request, response) {
   
     if (Object.keys(filterObj).length === 0) {
       products = await prisma.product.findMany({
-        // this is formula for pagination: (page - 1) * limit(take)
+
         skip: (page - 1) * 10,
         take: 12,
         include: {
@@ -182,33 +168,28 @@ async function getAllProducts(request, response) {
         orderBy: sortObj,
       });
     } else {
-      // Check if category filter is present
-      if (filterObj.category && filterObj.category.equals) {
-        products = await prisma.product.findMany({
-          // this is formula for pagination: (page - 1) * limit(take)
-          skip: (page - 1) * 10,
-          take: 12,
-          include: {
-            category: {
-              select: {
-                name: true,
-              },
-            },
-          },
-          where: {
-            ...whereClause,
-            category: {
-              name: {
-                equals: filterObj.category.equals,
-              },
-            },
-          },
-          orderBy: sortObj,
-        });
+
+if (filterObj.category && filterObj.category.equals) {
+  products = await prisma.product.findMany({
+    skip: (page - 1) * 10,
+    take: 12,
+    include: {
+      category: {
+        select: {
+          name: true,
+        },
+      },
+    },
+    where: {
+      ...whereClause,
+      categoryId: filterObj.category.equals, 
+    },
+    orderBy: sortObj,
+  });
       } else {
-        // If no category filter, use whereClause
+  
         products = await prisma.product.findMany({
-          // this is formula for pagination: (page - 1) * limit(take)
+        
           skip: (page - 1) * 10,
           take: 12,
           include: {
@@ -273,15 +254,15 @@ async function createProduct(request, response) {
     });
     return response.status(201).json(product);
   } catch (error) {
-    console.error("Error creating product:", error); // Dodajemo log za proveru
+    console.error("Error creating product:", error); 
     return response.status(500).json({ error: "Error creating product" });
   }
 }
 
-// Method for updating existing product
+
 async function updateProduct(request, response) {
   try {
-    const { id } = request.params; // Getting a slug from params
+    const { id } = request.params; 
     const {
       slug,
       title,
@@ -293,7 +274,7 @@ async function updateProduct(request, response) {
       categoryId,
       inStock,
     } = request.body;
-    // Finding a product by slug
+   
     const existingProduct = await prisma.product.findUnique({
       where: {
         id,
@@ -304,10 +285,10 @@ async function updateProduct(request, response) {
       return response.status(404).json({ error: "Product not found" });
     }
 
-    // Updating found product
+   
     const updatedProduct = await prisma.product.update({
       where: {
-        id, // Using id of the found product
+        id,
       },
       data: {
         title: title,
@@ -328,12 +309,12 @@ async function updateProduct(request, response) {
   }
 }
 
-// Method for deleting a product
+
 async function deleteProduct(request, response) {
   try {
     const { id } = request.params;
 
-        // Check for related records in wishlist table
+      
         const relatedOrderProductItems = await prisma.customer_order_product.findMany({
           where: {
             productId: id,
